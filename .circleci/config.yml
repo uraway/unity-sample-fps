@@ -86,10 +86,12 @@ jobs:
       - activate
       - run:
           name: Build for << parameters.build-target >>
+          no_output_timeout: 60m
           command: |
             xvfb-run -a \
             /opt/Unity/Editor/Unity -projectPath $(pwd) \
                                     -batchmode \
+                                    -nographics \
                                     -logFile /dev/stdout \
                                     -executeMethod BuildHelper.<< parameters.build-target >>
                                     -quit
