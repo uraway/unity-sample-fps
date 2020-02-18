@@ -1,0 +1,133 @@
+version: 2.1
+
+executors:
+  default:
+    parameters:
+      unity-version:
+        type: string
+        default: 2019.3.1f1-update-2020-02-17
+    docker:
+      - image: gableroux/unity3d:<< parameters.unity-version >>
+
+commands:
+  activate:
+    steps:
+      - run:
+          name: Decode License content
+          command: |
+            echo "$UNITY_LICENSE_CONTENT" | base64 --decode | tr -d '\r' > yourulffile.ulf
+      - run:
+          name: |
+            Activation
+# logFile: ログ
+# batchmode: バッチモード。コマンドラインで完結するようにポップアップを表示しないオプション
+# nographics: GPUのないマシンで実行
+# manualLicenseFile: ライセンスファイル(.ulf)
+          command: |
+            /opt/Unity/Editor/Unity -logFile \
+                                    -batchmode \
+                                    -nographics \
+                                    -quit \
+                                    -logFile /dev/stdout \
+                                    -manualLicenseFile yourulffile.ulf || exit 0
+
+jobs:
+  trigger-workflow:
+    machine:
+      image: 'ubuntu-1604:201903-01'
+    parameters:
+      unity-version:
+        type: string
+        default: "latest"
+    steps:
+      - run:
+          name: Trigger test-build workflow
+          command: |
+            VCS_TYPE=$(echo ${CIRCLE_BUILD_URL} | cut -d '/' -f 4)
+
+            curl -u ${CIRCLE_TOKEN}: -X POST --header "Content-Type: application/json" -d "{
+              \"branch\": \"${CIRCLE_BRANCH}\",
+              \"parameters\": {\"run-triggered-workflow\": true, \"unity-version\":\"<< parameters.unity-version >>\"}
+            }" "https://circleci.com/api/v2/project/${VCS_TYPE}/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pipeline"
+
+  test:
+    parameters:
+      test-platform:
+        type: enum
+        enum: ['playmode', 'editmode']
+    executor: default
+    steps:
+      - checkout
+      - activate
+      - run:
+          name: |
+            << parameters.test-platform >> Test
+# runTests: テスト実行
+# testPlatform: テストプラットフォーム
+          command: |
+            xvfb-run -a \
+            /opt/Unity/Editor/Unity -projectPath $(pwd) \
+                                    -runTests \
+                                    -testPlatform << parameters.test-platform >> \
+                                    -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
+                                    -logFile /dev/stdout
+      - store_artifacts:
+            path: << parameters.test-platform >>-results.xml
+
+  build:
+    executor: default
+    parameters:
+      build-target:
+        type: string
+    steps:
+      - checkout
+      - activate
+      - run:
+          name: Build for << parameters.build-target >>
+          command: |
+            xvfb-run -a \
+            /opt/Unity/Editor/Unity -projectPath $(pwd) \
+                                    -batchmode \
+                                    -nographics \
+                                    -buildTarget << parameters.build-target >> \
+                                    -logFile /dev/stdout
+      - store_artifacts:
+          path: ./Builds
+
+workflows:
+  #trigger-workflow:
+  #  unless: << pipeline.parameters.run-triggered-workflow >>
+  #  jobs:
+  #    - trigger-workflow:
+  #        name: UnityHub LTS release
+  #        unity-version: 2018.4.16f1
+  #    # - trigger-workflow:
+  #    #     name: UnityHub Latest release
+  #    #     unity-version: 2019.3.0f6
+  test-build:
+    # when: << pipeline.parameters.run-triggered-workflow >>
+    jobs:
+      - test:
+          name: test-editmode
+          test-platform: editmode
+      - test:
+          name: test-playmode
+          test-platform: playmode
+      - build:
+          name: StandaloneLinux64
+          build-target: StandaloneLinux64
+          requires:
+            - test-editmode
+            - test-playmode
+      - build:
+          name: StandaloneOSX
+          build-target: StandaloneOSX
+          requires:
+            - test-editmode
+            - test-playmode
+      - build:
+          name: StandaloneWindows64
+          build-target: StandaloneWindows64
+          requires:
+            - test-editmode
+            - test-playmode
