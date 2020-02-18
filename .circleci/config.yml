@@ -90,8 +90,6 @@ jobs:
             xvfb-run -a \
             /opt/Unity/Editor/Unity -projectPath $(pwd) \
                                     -batchmode \
-                                    -nographics \
-                                    -buildTarget << parameters.build-target >> \
                                     -logFile /dev/stdout \
                                     -executeMethod BuildHelper.<< parameters.build-target >>
                                     -quit
