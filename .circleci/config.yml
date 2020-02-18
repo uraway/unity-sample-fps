@@ -71,7 +71,8 @@ jobs:
                                     -testPlatform << parameters.test-platform >> \
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
                                     -batchmode \
-                                    -logFile /dev/stdout
+                                    -logFile /dev/stdout \
+                                    -quit
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
 
@@ -91,7 +92,9 @@ jobs:
                                     -batchmode \
                                     -nographics \
                                     -buildTarget << parameters.build-target >> \
-                                    -logFile /dev/stdout
+                                    -logFile /dev/stdout \
+                                    -executeMethod BuildHelper.<< parameters.build-target >>
+                                    -quit
       - store_artifacts:
           path: ./Builds
 
@@ -115,20 +118,20 @@ workflows:
           name: test-playmode
           test-platform: playmode
       - build:
-          name: StandaloneLinux64
-          build-target: StandaloneLinux64
+          name: Linux
+          build-target: Linux
           requires:
             - test-editmode
             - test-playmode
       - build:
-          name: StandaloneOSX
-          build-target: StandaloneOSX
+          name: MacOS
+          build-target: MacOS
           requires:
             - test-editmode
             - test-playmode
       - build:
-          name: StandaloneWindows64
-          build-target: StandaloneWindows64
+          name: Windows
+          build-target: Windows
           requires:
             - test-editmode
             - test-playmode
