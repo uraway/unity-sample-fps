@@ -93,7 +93,8 @@ jobs:
                                     -batchmode \
                                     -nographics \
                                     -logFile /dev/stdout \
-                                    -executeMethod BuildHelper.<< parameters.build-target >>
+                                    -buildTarget << parameters.build-target >> \
+                                    -executeMethod BuildHelper.<< parameters.build-target >> \
                                     -quit
       - store_artifacts:
           path: ./Builds
@@ -119,19 +120,19 @@ workflows:
           test-platform: playmode
       - build:
           name: Linux
-          build-target: Linux
+          build-target: StandaloneLinux64
           requires:
             - test-editmode
             - test-playmode
       - build:
           name: MacOS
-          build-target: MacOS
+          build-target: StandaloneOSX
           requires:
             - test-editmode
             - test-playmode
       - build:
           name: Windows
-          build-target: Windows
+          build-target: StandaloneWindows64
           requires:
             - test-editmode
             - test-playmode
