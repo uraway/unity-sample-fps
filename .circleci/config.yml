@@ -70,6 +70,7 @@ jobs:
                                     -runTests \
                                     -testPlatform << parameters.test-platform >> \
                                     -testResults $(pwd)/<< parameters.test-platform >>-results.xml \
+                                    -batchmode \
                                     -logFile /dev/stdout
       - store_artifacts:
             path: << parameters.test-platform >>-results.xml
