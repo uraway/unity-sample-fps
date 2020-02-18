@@ -88,7 +88,7 @@ jobs:
           name: Build for << parameters.build-target >>
           no_output_timeout: 60m
           command: |
-            xvfb-run -a \
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
             /opt/Unity/Editor/Unity -projectPath $(pwd) \
                                     -batchmode \
                                     -nographics \
