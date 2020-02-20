@@ -32,34 +32,10 @@ public static class BuildHelper
 
 	private static void SetupVariables()
 	{
-		if (!File.Exists("./buildManifest.txt"))
-		{
-			PlayerSettings.productName = "Product Name Here";
-			PlayerSettings.companyName = "Luke Parker";
-			PlayerSettings.forceSingleInstance = true;
-			PlayerSettings.bundleVersion = "0.0.0.0";
-			_buildLocation = "./Build/";
-		}
-		else
-		{
-			using (var fs = new FileStream("./buildManifest.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-			{
-				using (var sr = new StreamReader(fs))
-				{
-					var fileData = new Dictionary<string, string>();
-					while (!sr.EndOfStream)
-					{
-						var line = sr.ReadLine().Split('=');
-						fileData.Add(line[0], line[1].Replace("\"", ""));
-					}
-
-					PlayerSettings.productName = fileData["ProductName"];
-					PlayerSettings.companyName = fileData["CompanyName"];
-					PlayerSettings.forceSingleInstance = true;
-					PlayerSettings.bundleVersion = fileData["Version"];
-					_buildLocation = fileData["BuildLocation"] + "/" + fileData["Version"] + "/" + fileData["ProductName"].Replace(" ", "_");
-				}
-			}
-		}
+		PlayerSettings.productName = "Unity Sample";
+		// PlayerSettings.companyName = "...";
+		// PlayerSettings.forceSingleInstance = true;
+		PlayerSettings.bundleVersion = "0.0.0.0";
+		_buildLocation = "./Builds/";
 	}
 }

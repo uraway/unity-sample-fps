@@ -15,7 +15,7 @@ commands:
       - run:
           name: Decode License content
           command: |
-            echo "$UNITY_LICENSE_CONTENT" | base64 --decode | tr -d '\r' > yourulffile.ulf
+            echo "$UNITY_LICENSE_CONTENT" | base64 --decode > yourulffile.ulf
       - run:
           name: |
             Activation
